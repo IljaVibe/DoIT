@@ -59,6 +59,46 @@ export function useStore() {
     setState(next);
     persist(next);
   };
+  useEffect(
+    () =>
+      window.doit?.onPatch((patch) => {
+        const key = patch.collection;
+        const current = ref.current[key] as { id: string }[];
+        const records = current.some((r) => r.id === patch.record.id)
+          ? current.map((r) => (r.id === patch.record.id ? patch.record : r))
+          : [patch.record, ...current];
+        update((s) => ({ ...s, [key]: records }));
+      }),
+    [],
+  );
+  useEffect(() => {
+    document.documentElement.dataset.theme = state.settings.theme || "sage";
+  }, [state.settings.theme]);
+  useEffect(
+    () =>
+      window.doit?.onBeforeClose(async () => {
+        try {
+          await queue.current;
+          return true;
+        } catch {
+          return false;
+        }
+      }),
+    [],
+  );
+  useEffect(
+    () =>
+      window.doit?.onLockRequested(async () => {
+        try {
+          await queue.current;
+          await window.doit!.logout();
+        } catch (e) {
+          setError(String(e));
+          setStatus("error");
+        }
+      }),
+    [],
+  );
   const replace = (next: State) => {
     ref.current = next;
     setState(next);

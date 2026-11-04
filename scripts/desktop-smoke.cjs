@@ -24,6 +24,7 @@ async function launch() {
   let page = await instance.firstWindow();
   await page.setViewportSize({ width: 1440, height: 960 });
   page.on("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "Продолжить без аккаунта" }).click();
   await page.getByLabel("Как к вам обращаться?").pressSequentially("Тест");
   assert.equal(
     await page.getByLabel("Как к вам обращаться?").inputValue(),
@@ -172,6 +173,7 @@ async function launch() {
   await instance.close();
   instance = await launch();
   page = await instance.firstWindow();
+  await page.getByRole("button", { name: "Продолжить без аккаунта" }).click();
   await page.getByRole("heading", { name: "Хорошего дня, Тест" }).waitFor();
   assert((await page.evaluate(() => window.doit.load())).tasks.length === 1);
   assert(

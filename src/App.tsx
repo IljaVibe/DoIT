@@ -57,6 +57,8 @@ import {
   type View,
 } from "./model";
 import { useStore } from "./useStore";
+import { ThemePicker, DesktopSettings } from "./Preferences";
+import { useAccount } from "./Account";
 
 const nav = [
   { id: "today", label: "Мой день", icon: Sun },
@@ -344,7 +346,9 @@ export default function App() {
     update((s) => ({
       ...s,
       tasks: s.tasks.some((t) => t.id === task.id)
-        ? s.tasks.map((t) => (t.id === task.id ? task : t))
+        ? s.tasks.map((t) =>
+            t.id === task.id ? { ...task, completed: t.completed } : t,
+          )
         : [task, ...s.tasks],
     }));
     setModal(null);
@@ -673,7 +677,7 @@ export default function App() {
           >
             <Settings size={18} strokeWidth={1.7} />
             <span>Настройки</span>
-            <small>v0.1</small>
+            <small>v0.2</small>
           </button>
         </div>
       </aside>
@@ -2564,6 +2568,7 @@ function SettingsPanel({
   replace: (s: State) => void;
   notify: (message: string) => void;
 }) {
+  const account = useAccount();
   const [name, setName] = useState(state.settings.name),
     [query, setQuery] = useState(""),
     [cities, setCities] = useState<City[]>([]),
@@ -2619,6 +2624,8 @@ function SettingsPanel({
   return (
     <Modal title="Настройки пространства" onClose={onClose}>
       <div className="settings-content">
+        <ThemePicker state={state} update={update} />
+        <DesktopSettings flush={flush} notify={notify} />
         <section>
           <h3>Как к вам обращаться?</h3>
           <form
@@ -2719,8 +2726,9 @@ function SettingsPanel({
             Данные и резервная копия
           </h3>
           <p>
-            Задачи, заметки и цели хранятся локально. ZIP-копия включает
-            документы. Она не зашифрована: храните её в надёжном месте.
+            {account.profile
+              ? "Копия аккаунта .doit зашифрована вашим паролем и включает документы. Восстановить её можно на экране входа через «Из копии». Кнопка «Восстановить» ниже импортирует старую ZIP-копию версии 0.1."
+              : "Задачи, заметки и цели хранятся локально. ZIP-копия гостя включает документы и не зашифрована: храните её в надёжном месте."}
           </p>
           <div className="settings-buttons">
             <button
@@ -2767,7 +2775,7 @@ function SettingsPanel({
         </section>
         <div className="about">
           <span className="brand-word">DoIT</span>
-          <span>Версия 0.1.0 · Для спокойных, осмысленных дней.</span>
+          <span>Версия 0.2.0 · Для спокойных, осмысленных дней.</span>
         </div>
       </div>
     </Modal>
@@ -2837,7 +2845,7 @@ function Welcome({
         </button>
         <small>
           <HardDrive size={13} />
-          Без аккаунта. Данные остаются на устройстве.
+          Можно работать без интернета. Данные на устройстве.
         </small>
       </div>
     </div>

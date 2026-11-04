@@ -85,6 +85,9 @@ const stateSchema = z
         })
         .nullable(),
       onboardingDone: z.boolean(),
+      theme: z
+        .enum(["sage", "sand", "mist", "lavender", "graphite"])
+        .default("sage"),
     }),
   })
   .superRefine((s, ctx) => {

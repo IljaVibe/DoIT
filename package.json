@@ -1,7 +1,7 @@
 {
   "name": "doit-desktop",
   "productName": "DoIT",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Спокойное пространство для задач, мыслей и планов",
@@ -13,10 +13,12 @@
     "dev": "vite --host 127.0.0.1",
     "desktop": "npm run build && electron .",
     "build": "tsc --noEmit && vite build",
-    "test": "node tests/store.test.cjs",
+    "test": "node tests/run.cjs",
     "test:ui": "node scripts/smoke.cjs",
     "test:desktop": "node scripts/desktop-smoke.cjs",
-    "dist:win": "npm run build && electron-builder --win zip --x64",
+    "test:accounts": "node scripts/accounts-desktop-smoke.cjs",
+    "dist:win": "npm run build && electron-builder --win dir --x64 && node scripts/build-installer.cjs",
+    "dist:zip": "npm run build && electron-builder --win zip --x64",
     "dist:linux": "npm run build && electron-builder --linux dir --x64"
   },
   "dependencies": {
@@ -48,9 +50,22 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/sql.js/dist/sql-asm*",
+      "!node_modules/sql.js/dist/*debug*",
+      "!node_modules/sql.js/dist/worker*",
+      "!node_modules/sql.js/dist/sqljs-all.zip",
+      "!node_modules/sql.js/dist/*inline*",
+      "!node_modules/lucide-react/**",
+      "!node_modules/react/**",
+      "!node_modules/react-dom/**"
     ],
     "asar": true,
+    "electronLanguages": [
+      "ru",
+      "en-US"
+    ],
+    "compression": "maximum",
     "extraFiles": [
       {
         "from": "resources/ПРОЧИТАЙТЕ.txt",
@@ -58,7 +73,7 @@
       }
     ],
     "win": {
-      "target": "zip",
+      "target": "nsis",
       "signExecutable": false,
       "icon": "build/icon.ico"
     },
@@ -66,6 +81,20 @@
       "target": "dir",
       "category": "Office"
     },
-    "artifactName": "DoIT-${version}-Windows-${arch}.${ext}"
+    "artifactName": "DoIT-${version}-Windows-${arch}.${ext}",
+    "nsis": {
+      "artifactName": "DoIT-Setup-${version}-${arch}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "installerLanguages": [
+        "ru_RU",
+        "en_US"
+      ]
+    }
   }
 }

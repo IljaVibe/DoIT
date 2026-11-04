@@ -49,7 +49,30 @@ export type State = {
   goals: Goal[];
   projects: { id: string; name: string }[];
   attachments: Attachment[];
-  settings: { name: string; city: City | null; onboardingDone: boolean };
+  settings: {
+    name: string;
+    city: City | null;
+    onboardingDone: boolean;
+    theme?: Theme;
+  };
+};
+export type Theme = "sage" | "sand" | "mist" | "lavender" | "graphite";
+export type AccountInfo = { id: string; name: string; createdAt: string };
+export type AuthInfo = {
+  session: "locked" | "guest" | "account";
+  profile: AccountInfo | null;
+  accounts: AccountInfo[];
+  hasLegacy: boolean;
+};
+export type DesktopPreferences = {
+  autoStart: boolean;
+  closeToTray: boolean;
+  widgets: { tasks: boolean; goals: boolean; note: boolean };
+  alwaysOnTop: boolean;
+  autoStartSupported: boolean;
+  backupFolder: string;
+  backupLastAt: string;
+  backupError: string;
 };
 export type View =
   | "today"
@@ -176,6 +199,31 @@ export function exampleState(name: string): State {
   };
 }
 export interface DesktopAPI {
+  authInfo(): Promise<AuthInfo>;
+  createAccount(
+    name: string,
+    password: string,
+    migrate: boolean,
+  ): Promise<AuthInfo>;
+  login(id: string, password: string): Promise<AuthInfo>;
+  logout(): Promise<void>;
+  guest(): Promise<AuthInfo>;
+  restoreAccount(password: string): Promise<AuthInfo | null>;
+  onAuthChanged(callback: (info: AuthInfo) => void): () => void;
+  desktopPreferences(): Promise<DesktopPreferences>;
+  setDesktopPreferences(
+    patch: Partial<DesktopPreferences>,
+  ): Promise<DesktopPreferences>;
+  chooseBackupFolder(): Promise<DesktopPreferences>;
+  backupNow(): Promise<DesktopPreferences>;
+  onBeforeClose(callback: () => Promise<boolean>): () => void;
+  onLockRequested(callback: () => void): () => void;
+  onPatch(
+    callback: (patch: {
+      collection: "tasks" | "notes" | "goals";
+      record: Task | Note | Goal;
+    }) => void,
+  ): () => void;
   load(): Promise<State>;
   save(state: State): Promise<State>;
   attach(): Promise<Attachment[]>;
